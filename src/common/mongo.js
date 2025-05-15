@@ -8,16 +8,21 @@ const dbName = process.env.DBNAME_MONGO ?? "";
 const MongoClient = mongodb.MongoClient;
 let client = null;
 let db = null;
-let collection = null;
 
 const connect = async () => {
-    if (client && client.isConnected()) {
+    if (client && client.topology && client.topology.isConnected()) {
         return;
     }
     try {
-        client = await MongoClient.connect(connectString, { useNewUrlParser: true, useUnifiedTopology: true });
+        client = await MongoClient.connect(connectString, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            maxPoolSize: 100,
+            minPoolSize: 10,
+        });
         db = client.db(dbName);
     } catch (error) {
+        console.error('MongoDB connection error:', error);
         throw error;
     }
 };
@@ -28,26 +33,21 @@ const disConnect = async () => {
             await client.close();
             client = null;
             db = null;
-            collection = null;
         }
     } catch (error) {
+        console.error('MongoDB disconnect error:', error);
         throw error;
     }
 };
 
-const createdWithCollection = async (collectionName) => {
+const createdWithCollection = (collectionName) => {
     if (!db) {
         throw new Error('Database not initialized. Call connect before createdWithCollection.');
     }
-    if (!collection || collection.collectionName !== collectionName) {
-        collection = db.collection(collectionName);
-    }
+    return db.collection(collectionName);
 };
 
-const get = async (query = {}) => {
-    if (!collection) {
-        throw new Error('Collection not initialized. Call createdWithCollection before get.');
-    }
+const get = async (collection, query = {}) => {
     try {
         return await collection.find(query).toArray();
     } catch (error) {
@@ -55,10 +55,7 @@ const get = async (query = {}) => {
     }
 };
 
-const findOne = async (query = {}) => {
-    if (!collection) {
-        throw new Error('Collection not initialized. Call createdWithCollection before get.');
-    }
+const findOne = async (collection, query = {}) => {
     try {
         return await collection.findOne(query);
     } catch (error) {
@@ -66,10 +63,7 @@ const findOne = async (query = {}) => {
     }
 };
 
-const insert = async (object) => {
-    if (!collection) {
-        throw new Error('Collection not initialized. Call createdWithCollection before insert.');
-    }
+const insert = async (collection, object) => {
     try {
         if (Array.isArray(object)) {
             await collection.insertMany(object);
@@ -81,10 +75,7 @@ const insert = async (object) => {
     }
 };
 
-const update = async (object, filter, upsert = true) => {
-    if (!collection) {
-        throw new Error('Collection not initialized. Call createdWithCollection before update.');
-    }
+const update = async (collection, object, filter, upsert = true) => {
     try {
         const newvalues = { $set: object };
         await collection.updateOne(filter, newvalues, { upsert });
@@ -93,10 +84,7 @@ const update = async (object, filter, upsert = true) => {
     }
 };
 
-const deleted = async (filter) => {
-    if (!collection) {
-        throw new Error('Collection not initialized. Call createdWithCollection before delete.');
-    }
+const deleted = async (collection, filter) => {
     try {
         await collection.deleteOne(filter);
     } catch (error) {
@@ -104,18 +92,28 @@ const deleted = async (filter) => {
     }
 };
 
-const withMongo = async (collectionName, callback) => {
-    try {
-        await connect();
-        await createdWithCollection(collectionName);
-        const result = await callback();
-        return result;
-    } catch (error) {
-        throw error;
-    } finally {
-        await disConnect();
+const withMongo = async (collectionName, callback, retries = 3) => {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            await connect();
+            const collection = createdWithCollection(collectionName);
+            const result = await callback(collection);
+            return result;
+        } catch (error) {
+            console.error(`Attempt ${attempt}/${retries} failed for ${collectionName}:`, error);
+            if (attempt === retries) {
+                throw error;
+            }
+            await new Promise(resolve => setTimeout(resolve, 100 * attempt));
+        }
     }
-}
+};
+
+// Đóng connection khi ứng dụng tắt
+process.on('SIGINT', async () => {
+    await disConnect();
+    process.exit(0);
+});
 
 export const MongoData = {
     connect,

@@ -92,6 +92,15 @@ const deleted = async (collection, filter) => {
     }
 };
 
+const deleteMany = async (collection, filter) => {
+    try {
+        const result = await collection.deleteMany(filter);
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
+
 const withMongo = async (collectionName, callback, retries = 3) => {
     for (let attempt = 1; attempt <= retries; attempt++) {
         try {
@@ -124,5 +133,6 @@ export const MongoData = {
     insert,
     update,
     deleted,
-    withMongo
+    withMongo,
+    deleteMany
 };

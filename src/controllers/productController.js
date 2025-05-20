@@ -21,11 +21,15 @@ const update = async (req, res) => {
 const deleted = async (req, res) => {
     res.send(await productFunc.deleted(req.body));
 }
-
+const getCache = async (req, res) => {
+    const data = await productFunc.getCache(req.body);
+    res.send(data);
+}
 export const productController = {
     insert,
     search,
     update,
     deleted,
-    load
+    load,
+    getCache
 }

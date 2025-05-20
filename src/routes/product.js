@@ -9,6 +9,7 @@ router.post('/update', productController.update);
 router.post('/search',  productController.search);
 router.post('/load',  productController.load);
 router.post('/delete', productController.deleted);
+router.post('/getCache', productController.getCache);
 
 export const productRouter = {
     path,

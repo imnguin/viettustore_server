@@ -4,11 +4,34 @@ import apiresult from '../model/apiresult.js';
 import { baseItem } from "../model/baseItem.js";
 
 const search = async (req) => {
+    const { outputvoucherid, fromdate = new Date(), todate = new Date() } = req;
     try {
-        const data = await MongoData.withMongo('pm_outputvoucher', (collection) => MongoData.get(collection, req));
+        let filter = {
+            createdat: {
+                $gte: new Date(fromdate),
+                $lte: new Date(todate)
+            }
+        };
+        if (!!outputvoucherid) {
+            filter = { outputvoucherid }
+        }
+        const data = await MongoData.withMongo('pm_outputvoucher', (collection) => MongoData.get(collection, filter));
         return new apiresult(false, 'Lấy danh sách thành công', 'Lấy danh sách thành công', data);
     } catch (error) {
         return new apiresult(true, 'Lỗi lấy danh sách', error.message);
+    }
+};
+
+const load = async (req) => {
+    try {
+        const ovInfo = await MongoData.withMongo('pm_outputvoucher', (collection) => MongoData.findOne(collection, req));
+        if (!ovInfo) {
+            return new apiresult(true, 'Không tìm thấy thông tin hóa đơn!', 'Không tìm thấy thông tin hóa đơn!', null);
+        }
+        const ovDTInfo = await MongoData.withMongo('pm_outputvoucher_detail', (collection) => MongoData.get(collection, req));
+        return new apiresult(false, 'Lấy thông tin thành công!', 'Lấy thông tin thành công!', { ...ovInfo, outputvoucherdetail: ovDTInfo });
+    } catch (error) {
+        return new apiresult(true, 'Lỗi lấy thông tin!', error.message);
     }
 };
 
@@ -42,4 +65,5 @@ const insert = async (req) => {
 export const outputvoucherFunc = {
     search,
     insert,
+    load
 };

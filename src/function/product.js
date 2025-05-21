@@ -125,7 +125,7 @@ const getCache = async (req) => {
         const data = await MongoData.withMongo('pm_product', (collection) => MongoData.get(collection, {}));
         return new apiresult(false, 'Lấy thông tin thành công!', 'Lấy thông tin thành công!', data);
     } catch (error) {
-        return new apiresult(true, 'Lỗi lấy thông tin nhân viên', error.message);
+        return new apiresult(true, 'Lỗi lấy thông tin!', error.message);
     }
 };
 

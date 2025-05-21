@@ -4,6 +4,7 @@ import { outputvoucherController } from '../controllers/outputvoucherController.
 const router = express.Router();
 const path = '/api/outputvoucher';
 router.post('/search',  outputvoucherController.search);
+router.post('/load',  outputvoucherController.load);
 router.post('/add', outputvoucherController.insert);
 
 export const outputvoucherRouter = {

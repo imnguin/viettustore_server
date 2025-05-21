@@ -16,7 +16,7 @@ const load = async (req) => {
         const data = await MongoData.withMongo('pm_product_lot', (collection) => MongoData.findOne(collection, req));
         return new apiresult(false, 'Lấy thông tin thành công!', 'Lấy thông tin thành công!', data);
     } catch (error) {
-        return new apiresult(true, 'Lỗi lấy thông tin nhân viên', error.message);
+        return new apiresult(true, 'Lỗi lấy thông tin!', error.message);
     }
 };
 
@@ -62,7 +62,7 @@ const getCache = async (req) => {
         const data = await MongoData.withMongo('pm_product_lot', (collection) => MongoData.get(collection, {}));
         return new apiresult(false, 'Lấy thông tin thành công!', 'Lấy thông tin thành công!', data);
     } catch (error) {
-        return new apiresult(true, 'Lỗi lấy thông tin nhân viên', error.message);
+        return new apiresult(true, 'Lỗi lấy thông tin!', error.message);
     }
 };
 

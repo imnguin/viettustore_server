@@ -3,6 +3,15 @@ import { genov } from "../common/utils/index.js";
 import apiresult from '../model/apiresult.js';
 import { baseItem } from "../model/baseItem.js";
 
+const search = async (req) => {
+    try {
+        const data = await MongoData.withMongo('pm_outputvoucher', (collection) => MongoData.get(collection, req));
+        return new apiresult(false, 'Lấy danh sách thành công', 'Lấy danh sách thành công', data);
+    } catch (error) {
+        return new apiresult(true, 'Lỗi lấy danh sách', error.message);
+    }
+};
+
 const insert = async (req) => {
     try {
         let objMaster = {
@@ -31,5 +40,6 @@ const insert = async (req) => {
 };
 
 export const outputvoucherFunc = {
+    search,
     insert,
 };

@@ -6,10 +6,12 @@ import { outputvoucherRouter } from "./outputvoucher.js";
 import { priceRouter } from "./price.js";
 import { productRouter } from "./product.js";
 import { product_lotRouter } from "./product_lot.js";
+import { promotionRouter } from "./promotion.js";
 import { quantityUnitRouter } from "./quantityUnit.js";
 import { userRouter } from "./user.js";
 
 export const Routers = [
+    promotionRouter,
     outputvoucherRouter,
     product_lotRouter,
     priceRouter,

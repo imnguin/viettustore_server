@@ -50,11 +50,20 @@ const load = async (req) => {
             MongoData.findOne(collection, { productid: productInfo.productid })
         );
 
+        const promotionInfo = await MongoData.withMongo('pm_promotion', (collection) =>
+            MongoData.findOne(collection, { productid: productInfo.productid })
+        );
+
         const data = {
             ...productInfo,
             quantityunitname: unitInfo ? unitInfo.quantityunitname : '',
             price: priceInfo ? priceInfo.price : 0,
-            barcode: req.barcode
+            barcode: req.barcode,
+            promotiontypeid: promotionInfo ? promotionInfo.promotiontypeid : null,
+            salequantity: promotionInfo ? promotionInfo.salequantity : 0,
+            promotionquantity: promotionInfo ? promotionInfo.promotionquantity : 0,
+            applydatefrom: promotionInfo ? promotionInfo.applydatefrom : null,
+            applydateto: promotionInfo ? promotionInfo.applydateto : null
         };
 
         return new apiresult(false, 'Lấy thông tin thành công', 'Lấy thông tin thành công', data);

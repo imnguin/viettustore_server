@@ -41,7 +41,7 @@ const insert = async (req) => {
             outputvoucherid: `OV0001${genov()}`,
             createdat: new Date(),
             totalamount: req.reduce((sum, item) => sum + item.totalamount, 0),
-            discountamount: req.reduce((sum, item) => sum + item.discountamount, 0),
+            promotion: req.reduce((sum, item) => sum + item.promotion, 0),
             createduser: req[0].createduser
         }
         await MongoData.withMongo('pm_outputvoucher', (collection) =>
